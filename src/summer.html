@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link type="text/css" rel="stylesheet" href="./navbar.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>湖赏新荷</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2vmin;
+    }
+    #outer {
+      background-size: cover;
+      aspect-ratio: 1 / 1;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      margin: auto;
+      overflow: hidden;
+      transform-origin: center;
+      background-image: url('../assets/summer/bg-summer.png');
+      background-repeat: no-repeat;
+      background-position: 28.2% 9.8%;
+    }
+    #divider {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 2px;
+      background: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(-50%) translateX(-50%);
+      user-select: none;
+    }
+    #title, #title2 {
+      position: absolute;
+      color: white;
+      font-family: "方正姚体";
+      text-shadow: 0 0 10px rgba(255,255,255,0.5);
+      z-index: 10;
+      transform: translate(-50%, -50%);
+    }
+    #title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 4rem;
+      font-family: "方正姚体";
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY( -5vmin );
+      z-index: 114;
+      user-select: none;
+    }
+    #title2{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      font-family: "方正姚体";
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(5vmin);
+      z-index: 114;
+      user-select: none;
+    }
+    #divider {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 2px;
+      background: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(-50%) translateX(-50%);
+      user-select: none;
+    }
+    #rippleCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      will-change: transform;
+      transform-origin: left top;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+      user-select: none;
+    }
+    .fullscreen-btn {
+      position: fixed;
+      top: 20px;
+      right: 108px;
+      background: rgba(255,255,255,0.2);
+      border: 0.666667px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: white;
+      font-size: 20px;
+      z-index: 999;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!--主海报内容-->
+<div id="outer">
+  <canvas id="rippleCanvas"></canvas>
+
+  <div id="title">湖赏新荷</div>
+  <div id="divider"></div>
+  <div id="title2">2026/6/28 —— 2026/8/31</div>
+</div>
+
+<!-- 展开按钮 -->
+<div class="menu-toggle" onclick="toggleMenu()">荷花节 ▾</div>
+
+<!-- 可展开的菜单内容 -->
+<div class="season-menu" id="seasonMenu">
+  <a href="../index.html">返回主页</a>
+  <a href="spring.html">踏青节</a>
+  <a href="summer.html">荷花节</a>
+  <a href="autumn.html">金秋游</a>
+  <a href="winter.html">新春游园会</a>
+</div>
+
+<button onclick="enterFullscreen()" class="fullscreen-btn">⛶</button>
+
+<script>
+  const outer = document.getElementById('outer');
+  const rippleCanvas = document.getElementById('rippleCanvas');
+  const ctx = rippleCanvas.getContext('2d');
+
+  // 调整画布大小
+  function resizeCanvas() {
+    rippleCanvas.width = outer.offsetWidth;
+    rippleCanvas.height = outer.offsetHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // 粒子生成
+  const particleCount = 12;
+  const particles = [];
+  const images = ['../assets/summer/Lotus-Flower-1.png', '../assets/summer/Lotus-Leaf-1.png','../assets/summer/Lotus-Leaf-2.png'];
+
+  const cols = 4; // 列
+  const rows = 3; // 行
+  const margin = 60;
+  const cellWidth = (outer.offsetWidth - margin * 2) / cols;
+  const cellHeight = (outer.offsetHeight - margin * 2) / rows;
+
+  let index = 0;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (index >= particleCount) break;
+
+      const img = document.createElement('img');
+      img.src = images[Math.floor(Math.random() * images.length)];
+      img.className = 'particle';
+      outer.appendChild(img);
+
+      const scale = (0.35 + Math.random() * 0.1) * Math.min(outer.offsetWidth / 1200, outer.offsetHeight / 1200);
+
+      const baseX = margin + col * cellWidth;
+      const baseY = margin + row * cellHeight;
+
+      const offsetX = (Math.random() - 0.5) * cellWidth * 0.8;
+      const offsetY = (Math.random() - 0.5) * cellHeight * 0.8;
+
+      particles.push({
+        el: img,
+        x: baseX + offsetX,
+        y: baseY + offsetY,
+        speed: 0.25 * ( 1 + Math.random()),
+        drift: (Math.random() - 0.5) * 0.5,
+        angle: 0,
+        scale: scale
+      });
+
+      index++;
+    }
+  }
+
+
+  // 重力方向
+  let gravityX = 0;
+  let gravityY = 1;
+
+  window.addEventListener('deviceorientation', e => {
+    const gamma = e.gamma || 0;
+    const beta = e.beta || 90;
+    gravityX = Math.sin(gamma * Math.PI / 180); // 有值
+    gravityY = Math.sin((beta) * Math.PI / 180); // ≈ 0
+
+  });
+
+  function animateParticles() {
+    particles.forEach(p => {
+      p.x += gravityX * p.speed + p.drift;
+      p.y += gravityY * p.speed;
+
+      // 出界时重置位置
+      if (p.y > outer.offsetHeight + 50) p.y = -50;
+      if (p.x < -50) p.x = outer.offsetWidth + 50;
+      if (p.x > outer.offsetWidth + 50) p.x = -50;
+
+      p.angle = 0.2 * Math.sin(p.y / 100);
+      p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.angle}rad) scale(${p.scale})`;
+    });
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+  // 涟漪系统
+  const ripples = [];
+
+  function createRipple() {
+    const x = Math.random() * rippleCanvas.width;
+    const y = rippleCanvas.height * (0.5 + Math.random() * 0.5);
+    ripples.push({ x, y, r: 5, alpha: 0.6, grow: 4 + Math.random() * 2 });
+  }
+
+  function drawRipples() {
+    ctx.clearRect(0, 0, rippleCanvas.width, rippleCanvas.height);
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${r.alpha})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      r.r += r.grow;
+      r.alpha -= 0.008;
+
+      if (r.alpha <= 0) ripples.splice(i, 1);
+    }
+    requestAnimationFrame(drawRipples);
+  }
+
+  setInterval(createRipple, 2000);
+  drawRipples();
+</script>
+<script src="navbar.js"></script>
+<script src="FullScreen.js"></script>
+</body>
+</html>

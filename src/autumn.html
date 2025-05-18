@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link type="text/css" rel="stylesheet" href="./navbar.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>金秋花海</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100vh;
+        font-size: 2vmin;
+    }
+    #outer {
+      background-size: cover;
+      aspect-ratio: 1 / 1; /* 保证始终是正方形区域 */
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%) translateX(0%);
+      overflow: hidden;
+      transform-origin: center;
+      background-image: url('../assets/autumn/bg-autumn.png');
+      background-repeat: no-repeat;
+      background-position: 61.8% 61.8%;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    #title, #title2, #divider {
+      position: absolute;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-family: "方正姚体";
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      z-index: 2;
+    }
+    #title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 4rem;
+      font-family: "方正姚体";
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY( -5vmin );
+      z-index: 114;
+      user-select: none;
+    }
+    #title2{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      font-family: "方正姚体";
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(5vmin);
+      z-index: 114;
+      user-select: none;
+    }
+    #divider {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 2px;
+      background: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(-50%) translateX(-50%);
+      user-select: none;
+    }
+    .fullscreen-btn {
+      position: fixed;
+      top: 20px;
+      right: 108px;
+      background: rgba(255,255,255,0.2);
+      border: 0.666667px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: white;
+      font-size: 20px;
+      z-index: 999;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!--主海报内容-->
+<div id="outer">
+  <canvas id="snow"></canvas>
+  <div id="title">金秋花海</div>
+  <div id="divider"></div>
+  <div id="title2">2025/9/26 —— 2025/11/6</div>
+</div>
+
+<!-- 展开按钮 -->
+<div class="menu-toggle" onclick="toggleMenu()">金秋游 ▾</div>
+
+<!-- 可展开的菜单内容 -->
+<div class="season-menu" id="seasonMenu">
+  <a href="../index.html">返回主页</a>
+  <a href="spring.html">踏青节</a>
+  <a href="summer.html">荷花节</a>
+  <a href="autumn.html">金秋游</a>
+  <a href="winter.html">新春游园会</a>
+</div>
+
+<button onclick="enterFullscreen()" class="fullscreen-btn">⛶</button>
+
+<script>
+  const canvas = document.getElementById("snow");
+  const ctx = canvas.getContext("2d");
+  const outer = document.getElementById("outer");
+
+  let w = canvas.width = outer.offsetWidth;
+  let h = canvas.height = outer.offsetHeight;
+
+  window.addEventListener("resize", () => {
+    w = canvas.width = outer.offsetWidth;
+    h = canvas.height = outer.offsetHeight;
+  });
+
+  // 定义颜色和类型（模拟秋叶和花瓣）
+  const leafStyles = [
+    { type: 'leaf', color: 'rgba(255, 99, 71, 0.8)' },     // 红叶
+    { type: 'leaf', color: 'rgba(255, 165, 0, 0.8)' },     // 橙叶
+    { type: 'leaf', color: 'rgba(218, 165, 32, 0.8)' }     // 金叶
+  ];
+
+  const petalStyles = [
+    { type: 'petal', color: 'rgba(255, 182, 193, 0.8)' },  // 粉瓣
+    { type: 'petal', color: 'rgba(255, 255, 255, 0.6)' },  // 白瓣
+    { type: 'petal', color: 'rgba(173, 216, 230, 0.7)' }   // 淡蓝瓣
+  ];
+
+  const particleCount = 150;
+  const particles = [];
+
+  for (let i = 0; i < particleCount; i++) {
+    const isLeaf = i < particleCount / 2;
+    const style = isLeaf
+            ? leafStyles[Math.floor(Math.random() * leafStyles.length)]
+            : petalStyles[Math.floor(Math.random() * petalStyles.length)];
+
+    const baseR = isLeaf ? (6 + Math.random() * 6) : (3 + Math.random() * 3); // 花瓣更小
+
+    particles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: baseR,
+      speedY: 1.5 + Math.random() * 1.5,
+      offsetX: 0,
+      angle: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.02,
+      type: style.type,
+      color: style.color
+    });
+  }
+
+  let tilt = 0;
+
+  window.addEventListener("deviceorientation", (e) => {
+    const gamma = (e.gamma || 0) + 30;
+    tilt = Math.max(-15, Math.min(75, gamma)) * 0.1;
+  });
+
+  function drawLeaf(ctx, r) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(r, -r * 1.2, r * 0.5, -r * 2, 0, -r * 2.5);
+    ctx.bezierCurveTo(-r * 0.5, -r * 2, -r, -r * 1.2, 0, 0);
+    ctx.fill();
+  }
+
+  function drawPetal(ctx, r) {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.8, r * 1.5, 0, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+
+    particles.forEach(p => {
+      p.x += tilt;
+      p.y += p.speedY;
+
+      if (p.y > h) {
+        p.y = -10;
+        p.x = Math.random() * w;
+      }
+      if (p.x < -20 || p.x > w + 20) {
+        p.x = Math.random() * w;
+      }
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.fillStyle = p.color;
+
+      if (p.type === 'leaf') {
+        drawLeaf(ctx, p.r);
+      } else if (p.type === 'petal') {
+        drawPetal(ctx, p.r);
+      }
+
+      ctx.restore();
+
+      p.angle += p.rotationSpeed;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+</script>
+<script src="navbar.js"></script>
+<script src="FullScreen.js"></script>
+</body>
+</html>

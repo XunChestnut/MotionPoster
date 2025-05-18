@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link type="text/css" rel="stylesheet" href="./navbar.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>圆明踏青</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            overflow: hidden;
+            height: 100vh;
+            font-size: 2vmin;
+        }
+        #outer {
+            background-size: cover;
+            aspect-ratio: 1 / 1; /* 保证始终是正方形区域 */
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            margin: auto;
+            top: 50%;
+            transform: translateY(-50%) translateX(0%);
+            overflow: hidden;
+            transform-origin: center;
+            background-image: url('../assets/spring/bg-spring-2.png');
+            background-repeat: no-repeat;
+            background-position: 61.8% 61.8%;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        #title, #title2, #divider {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: "方正姚体";
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            z-index: 2;
+        }
+        #title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            font-family: "方正姚体";
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: translateY( -5vmin );
+            z-index: 114;
+            user-select: none;
+        }
+        #title2{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-family: "方正姚体";
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: translateY(5vmin);
+            z-index: 114;
+            user-select: none;
+        }
+        #divider {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            height: 2px;
+            background: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: translateY(-50%) translateX(-50%);
+            user-select: none;
+        }
+
+        .fullscreen-btn {
+             position: fixed;
+             top: 20px;
+             right: 108px;
+             background: rgba(255,255,255,0.2);
+            border: 0.666667px solid rgba(255, 255, 255, 0.18);
+            padding: 4px 10px;
+             border-radius: 6px;
+             color: white;
+             font-size: 20px;
+             z-index: 999;
+             backdrop-filter: blur(6px);
+             cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!--主海报内容-->
+<div id="outer">
+    <canvas id="snow"></canvas>
+    <div id="title">圆明踏青</div>
+    <div id="divider"></div>
+    <div id="title2">2025/4/2 —— 2025/4/6</div>
+</div>
+
+<!-- 展开按钮 -->
+<div class="menu-toggle" onclick="toggleMenu()">踏青节 ▾</div>
+
+<!-- 可展开的菜单内容 -->
+<div class="season-menu" id="seasonMenu">
+    <a href="../index.html">返回主页</a>
+    <a href="spring.html">踏青节</a>
+    <a href="summer.html">荷花节</a>
+    <a href="autumn.html">金秋游</a>
+    <a href="winter.html">新春游园会</a>
+</div>
+
+<button onclick="enterFullscreen()" class="fullscreen-btn">⛶</button>
+
+<script>
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+    const outer = document.getElementById("outer");
+
+    let w = canvas.width = outer.offsetWidth;
+    let h = canvas.height = outer.offsetHeight;
+
+    window.addEventListener("resize", () => {
+        w = canvas.width = outer.offsetWidth;
+        h = canvas.height = outer.offsetHeight;
+    });
+
+    const particleCount = 100;
+    const particles = [];
+
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: 6 + Math.random() * 6,
+            speedY: 1.5 + Math.random() * 1.5,
+            offsetX: 0,
+            angle: Math.random() * Math.PI * 2,
+        });
+    }
+
+    let tilt = 0; // 左右倾斜影响 x 方向速度
+
+    const monitor = () => {
+        window.addEventListener("deviceorientation", (e) => {
+            const gamma = ( e.gamma || 0 ) + 30;
+            tilt = Math.max(-15, Math.min(75, gamma)) * 0.1;
+        });
+    };
+
+    const enableMotion = () => {
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+
+        // 判断手机系统，从而请求陀螺仪权限
+        if(isiOS){
+            if(window.DeviceOrientationEvent.requestPermission){
+                window.DeviceOrientationEvent.requestPermission().then(state => {
+                    if(state === "granted"){
+                        //允许
+                        console.log("用户允许",state)
+                        monitor();
+                    }else if(state === "denied"){
+                        //拒绝
+                        alert('您已拒绝倾斜手机，请退出重新授权');
+                        console.log("用户拒绝",state)
+                    }else if(state === "prompt"){
+                        alert('遇到未知错误，请新进入')
+                    }
+                })
+            }else{
+                monitor();
+            }
+        }else if(isAndroid){
+            monitor();
+        }
+    }
+
+    window.addEventListener('click', enableMotion, { once: true });
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(154, 205, 50, 0.8)"; // yellowgreen 透明
+
+        particles.forEach(p => {
+            p.x += tilt;
+            p.y += p.speedY;
+
+            if (p.y > h) {
+                p.y = -10;
+                p.x = Math.random() * w;
+            }
+            if (p.x < -20 || p.x > w + 20) {
+                p.x = Math.random() * w;
+            }
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(p.r, -p.r * 1.5, 0, -p.r * 3);
+            ctx.quadraticCurveTo(-p.r, -p.r * 1.5, 0, 0);
+            ctx.fill();
+            ctx.restore();
+
+            p.angle += 0.01;
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+
+</script>
+<script src="navbar.js"></script>
+<script src="FullScreen.js"></script>
+</body>
+</html>

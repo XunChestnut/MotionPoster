@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link type="text/css" rel="stylesheet" href="./navbar.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>新春游园</title>
+  <style>
+    /* 保持新版本的样式不变 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100vh;
+      font-size: 2vmin;
+    }
+    #container {
+      background-size: cover;
+      aspect-ratio: 1 / 1;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%) translateX(0%);
+      overflow: hidden;
+      transform-origin: center;
+      background-repeat: no-repeat;
+      background-position: 61.8% 61.8%;
+    }
+    canvas, img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      user-select: none;
+      pointer-events: none;
+    }
+    img{
+      filter: brightness(70%);
+      /*opacity: 0;*/
+    }
+    #fgbLight {
+      z-index: 5;
+      mix-blend-mode: screen;
+      -webkit-mask-image: url("../assets/winter/front-winter.png");
+      mask-image: url("../assets/winter/front-winter.png");
+      -webkit-mask-size: cover;
+      mask-size: cover;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+    #bgFireworks{
+      z-index: 1;
+      mix-blend-mode: screen;
+    }
+    #fgLight{
+      z-index: 3;
+    }
+    #fgImage{
+      z-index: 2;
+    }
+    #fgSnow {
+      z-index: 4; /* 确保雪花在前景显示 */
+    }
+    #divider {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 2px;
+      z-index: 3;
+      background: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(-50%) translateX(-50%);
+      user-select: none;
+    }
+    #title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 4rem;
+      font-family: "方正姚体";
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY( -5vmin );
+      z-index: 114;
+      user-select: none;
+    }
+    #title2{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      font-family: "方正姚体";
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(5vmin);
+      z-index: 114;
+      user-select: none;
+    }
+    #divider {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      height: 2px;
+      background: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      transform: translateY(-50%) translateX(-50%);
+      user-select: none;
+    }
+    .fullscreen-btn {
+      position: fixed;
+      top: 20px;
+      right: 136px;
+      background: rgba(255,255,255,0.2);
+      border: 0.666667px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: white;
+      font-size: 20px;
+      z-index: 999;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!--主海报内容-->
+<div id="container">
+  <canvas id="fgbLight"></canvas>
+  <canvas id="bgFireworks"></canvas>
+  <canvas id="fgLight"></canvas>
+  <img src="../assets/winter/bg-winter.png" id="bgImage" />
+  <canvas id="fgSnow"></canvas>
+  <img src="../assets/winter/front-winter.png" id="fgImage" />
+  <div id="title">新春游园</div>
+  <div id="divider"></div>
+  <div id="title2">2026/2/17 —— 2026/3/3</div>
+</div>
+
+<!-- 展开按钮 -->
+<div class="menu-toggle" onclick="toggleMenu()">新春游园会 ▾</div>
+
+<!-- 可展开的菜单内容 -->
+<div class="season-menu" id="seasonMenu">
+  <a href="../index.html">返回主页</a>
+  <a href="spring.html">踏青节</a>
+  <a href="summer.html">荷花节</a>
+  <a href="autumn.html">金秋游</a>
+  <a href="winter.html">新春游园会</a>
+</div>
+
+<button onclick="enterFullscreen()" class="fullscreen-btn">⛶</button>
+
+<script>
+  // 初始化所有canvas
+  const canvasBg = document.getElementById('bgFireworks');
+  const canvasFg = document.getElementById('fgSnow');
+  const canvasLight = document.getElementById('fgLight');
+  const canvasFgBottom = document.getElementById('fgbLight');
+
+  const ctxBg = canvasBg.getContext('2d');
+  const ctxFg = canvasFg.getContext('2d');
+  const ctxLight = canvasLight.getContext('2d');
+  const ctxFgBottom = canvasFgBottom.getContext('2d');
+
+  // 窗口尺寸处理
+  let w = window.innerWidth;
+  let h = window.innerHeight;
+
+  // 变量声明
+  let snowflakes = [];
+  let fireworks = [];
+
+  let driftX = 0; // 控制水平漂移方向
+
+  function resizeCanvas() {
+    w = canvasBg.width = canvasFg.width = canvasLight.width = canvasFgBottom.width = window.innerWidth;
+    h = canvasBg.height = canvasFg.height = canvasLight.height = canvasFgBottom.height = window.innerHeight;
+    initSnowflakes();
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', function(event) {
+      // gamma 是左右倾斜角度，范围约 -90 到 90
+      // 简单归一化为 -1 ~ 1
+      const gamma = event.gamma || 0;
+      driftX = Math.max(-1, Math.min(1, gamma / 45)); // 限制范围
+    });
+  }
+
+
+  // 雪花系统
+  function initSnowflakes() {
+    const area = w * h;
+    const count = Math.min(300, Math.max(100, Math.floor(area / 8000)));
+    snowflakes = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: 1.5 + Math.random() * 2.5,
+      speed: 0.4 + Math.random() * 1.2,
+      drift: (Math.random() - 0.5) * 0.6
+    }));
+  }
+
+  function drawSnowflakes() {
+    ctxFg.clearRect(0, 0, w, h);
+    ctxFg.fillStyle = 'white';
+    snowflakes.forEach(s => {
+      ctxFg.beginPath();
+      ctxFg.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctxFg.fill();
+      s.drift += driftX * 0.01; // 加一点微调系数让响应更自然
+      s.drift = Math.max(-1.2, Math.min(1.2, s.drift)); // 限制最大水平漂移
+      s.y += s.speed;
+      s.x += s.drift;
+      if (s.y > h) s.y = -10, s.x = Math.random() * w;
+      if (s.x < 0 || s.x > w) s.x = Math.random() * w;
+    });
+  }
+
+  // 烟花系统
+  function launchFirework() {
+    const x = Math.random() * w * 0.8 + w * 0.1;
+    const y = Math.random() * h * 0.4 + h * 0.05;
+    const hue = Math.floor(Math.random() * 360);
+    const color = `hsl(${hue}, 100%, 70%)`;
+    const glowColor = `hsla(${hue}, 100%, 70%, 0.3)`;
+
+    fireworks.push({
+      phase: 'launch',
+      x,
+      y: h, // 从底部开始
+      targetX: x,
+      targetY: y,
+      speedY: 2 + Math.random() ,
+      particles: [],
+      color,
+      glowColor,
+      lightRadius: 150,
+      groundGlowRadius: 300 // 显式初始化地面光晕半径
+    });
+  }
+
+  function drawFireworks() {
+    ctxBg.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctxBg.fillRect(0, 0, w, h);
+    ctxLight.clearRect(0, 0, w, h);
+    ctxFgBottom.clearRect(0, 0, w, h);
+
+    fireworks.forEach((fw, index) => {
+      if (fw.phase === 'launch') {
+        ctxBg.beginPath();
+        ctxBg.globalAlpha = 1;
+        ctxBg.fillStyle = fw.color;
+        ctxBg.arc(fw.x, fw.y, 2, 0, Math.PI * 2);
+        ctxBg.fill();
+
+        fw.y -= fw.speedY;
+
+        if (fw.y <= fw.targetY) {
+          fw.phase = 'explode';
+          for (let i = 0; i < 30; i++) {
+            const angle = Math.random() * 2 * Math.PI;
+            const speed = Math.random() * 2;
+            fw.particles.push({
+              x: fw.x,
+              y: fw.y,
+              dx: Math.cos(angle) * speed,
+              dy: Math.sin(angle) * speed,
+              alpha: 1
+            });
+          }
+        }
+      } else if (fw.phase === 'explode') {
+        fw.particles.forEach(p => {
+          ctxBg.beginPath();
+          ctxBg.globalAlpha = p.alpha;
+          ctxBg.fillStyle = fw.color;
+          ctxBg.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctxBg.fill();
+
+          p.x += p.dx;
+          p.y += p.dy;
+          p.alpha -= 0.02;
+        });
+
+        fw.particles = fw.particles.filter(p => p.alpha > 0);
+
+        if (fw.lightRadius > 0) {
+          // 空中光晕
+          const grdTop = ctxLight.createRadialGradient(fw.x, fw.y, 0, fw.x, fw.y, fw.lightRadius);
+          grdTop.addColorStop(0, fw.glowColor);
+          grdTop.addColorStop(1, 'rgba(0,0,0,0)');
+          ctxLight.globalCompositeOperation = 'lighter';
+          ctxLight.fillStyle = grdTop;
+          ctxLight.beginPath();
+          ctxLight.arc(fw.x, fw.y, fw.lightRadius, 0, Math.PI * 2);
+          ctxLight.fill();
+
+          // 地面光晕
+          const groundHeight = [
+            h * 0.65,
+            h * 0.55,
+            h * 0.4,
+            h * 0.4,
+            h * 0.5,
+          ][Math.floor(fw.x * 5 / w)];
+
+          const grdBottom = ctxFgBottom.createRadialGradient(
+                  fw.x, groundHeight, 0,
+                  fw.x, groundHeight, fw.groundGlowRadius
+          );
+          grdBottom.addColorStop(0, fw.color);
+          grdBottom.addColorStop(1, 'rgba(0,0,0,0)');
+          ctxFgBottom.globalAlpha = Math.min(0.6, fw.groundGlowRadius / 100);
+          ctxFgBottom.fillStyle = grdBottom;
+          ctxFgBottom.beginPath();
+          ctxFgBottom.arc(fw.x, groundHeight, fw.groundGlowRadius, 0, Math.PI * 2);
+          ctxFgBottom.fill();
+
+          // 衰减控制
+          fw.lightRadius -= 4;
+          fw.groundGlowRadius -= 5;
+        }
+
+        // 清除条件
+        if (fw.particles.length === 0 && fw.lightRadius <= 0) {
+          fireworks.splice(index, 1);
+        }
+      }
+    });
+  }
+
+  function animate() {
+    ctxBg.globalAlpha = 1;
+    drawFireworks();
+    drawSnowflakes();
+    requestAnimationFrame(animate);
+  }
+
+  setInterval(launchFirework, 2000);
+  animate();
+</script>
+<script src="navbar.js"></script>
+<script src="FullScreen.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>圆明园四季活动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+            overflow: hidden;
+        }
+
+        body {
+            position: relative;
+            color: #ffffffcc;
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .background img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        .background img.active {
+            opacity: 0.5;
+        }
+
+        .container {
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #dddddd;
+        }
+
+        .season-links {
+            display: grid;
+            gap: 16px;
+        }
+
+        .season-button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #ffffffcc;
+            backdrop-filter: blur(9px);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .season-button:hover {
+            transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: rgba(255, 255, 255, 0.2) 0px 10px 25px 0px;
+        }
+
+        @media (max-width: 500px) {
+            h1 { font-size: 22px; }
+            .season-button { font-size: 14px; }
+        }
+
+        .overlay {
+            position: absolute;
+            mix-blend-mode: multiply;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(
+                    ellipse at center,
+                    rgba(0, 0, 0, 0) 40%,
+                    rgba(0, 0, 0, 0.1) 65%,
+                    rgba(0, 0, 0, 0.4) 85%,
+                    rgba(0, 0, 0, 0.6) 100%
+            );
+        }
+
+    </style>
+</head>
+<body>
+<!-- 背景轮播容器 -->
+<div class="background">
+    <img src="./assets/spring/bg-spring-2.png" class="active" alt="踏青节">
+    <img src="./assets/summer/bg-summer.png" alt="荷花节">
+    <img src="./assets/autumn/bg-autumn.png" alt="金秋游">
+    <img src="./assets/winter/bg-winter.png" alt="新春游园会">
+    <div class="overlay"></div> <!-- 新增遮罩层 -->
+</div>
+
+<!-- 内容卡片 -->
+<div class="container">
+    <h1>四季圆明</h1>
+    <p>踏青-荷花-金秋-新春</p>
+    <div class="season-links">
+        <a href="./src/spring.html" class="season-button">踏青节</a>
+        <a href="./src/summer.html" class="season-button">荷花节</a>
+        <a href="./src/autumn.html" class="season-button">金秋游</a>
+        <a href="./src/winter.html" class="season-button">新春游园会</a>
+    </div>
+</div>
+
+<script>
+    const images = document.querySelectorAll('.background img');
+    let current = 0;
+
+    setInterval(() => {
+        images[current].classList.remove('active');
+        current = (current + 1) % images.length;
+        images[current].classList.add('active');
+    }, 5000); // 每5秒切换
+</script>
+</body>
+</html>

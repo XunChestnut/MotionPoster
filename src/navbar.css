@@ -1,0 +1,63 @@
+/* 右上角按钮样式 */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+    border: 0.666667px solid rgba(255, 255, 255, 0.18);
+    box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
+    -webkit-box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 8px 14px;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 1145;
+    user-select: none;
+}
+
+/* 展开菜单的容器 */
+.season-menu {
+    position: fixed;
+    display: flex;
+    top: 60px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+    border: 0.666667px solid rgba(255, 255, 255, 0.18);
+    box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
+    -webkit-box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
+    color: rgba(255, 255, 255, 0.75);
+    border-radius: 10px;
+    padding: 10px;
+    z-index: 1144;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    pointer-events: none; /* 防止点击穿透 */
+}
+
+.season-menu.show {
+    max-height: 500px; /* 足够显示所有选项 */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+
+.season-menu a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    padding: 4px 0;
+}
+
+.season-menu a:hover {
+    font-weight: bold;
+}
